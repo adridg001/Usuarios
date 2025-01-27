@@ -4,7 +4,7 @@ class db
   const HOST = "localhost";
   const DBNAME = "digi";
   const USER = "root";
-  const PASSWORD = ""; // Evidentemente adapta los valores
+  const PASSWORD = ""; 
 
   static public function conexion()
   {
@@ -15,6 +15,6 @@ class db
     } catch (Exception $e) {
        echo "Ocurrió algo con la base de datos: " . $e->getMessage();
       }
-     return $conexion; //Es un objeto de conexion PDO
+     return $conexion; 
     }
 }

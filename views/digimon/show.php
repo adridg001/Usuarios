@@ -1,15 +1,13 @@
 <?php
 require_once '../../config/db.php'; // Ajusta la ruta según la estructura de tu proyecto
+require_once '../../controllers/digimonesController.php'; // Asegúrate de que esta ruta es correcta
 
-try {
-    $conexion = db::conexion();
-    $sql = "SELECT id, nombre, ataque, defensa, nivel, tipo, evo_id, imagen FROM digimones";
-    $stmt = $conexion->prepare($sql);
-    $stmt->execute();
-    $digimones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $error) {
-    echo "Error: " . $error->getMessage();
-}
+session_start();
+$usuarioId = $_SESSION['usuario_id']; // Asegúrate de que el ID del usuario está almacenado en la sesión
+
+$controlador = new DigimonesController();
+$digimones = $controlador->listarPorUsuario($usuarioId);
+
 ?>
 
 <!DOCTYPE html>
@@ -17,32 +15,12 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Digimones</title>
-    <link href="../../assets/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-    body {
-        background-image: url('fondo_VerDigimones.webp');
-        background-size: 100% 100%; 
-        background-position: center; 
-        background-repeat: no-repeat; 
-        min-height: 100vh; 
-        margin: 0; 
-        padding: 0; 
-        overflow-x: hidden; 
-    }
-
-    .container {
-        background-color: rgba(255, 255, 255, 0.8); 
-        border-radius: 15px; 
-        padding: 20px; 
-        margin: 10px auto; 
-        max-width: 1200px;
-    }
-</style>
+    <title>Mis Digimones</title>
+    <link href="/Digimon/assets/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5">Lista de Digimones</h1>
+        <h1 class="mt-5">Mis Digimones</h1>
         <table class="table table-striped mt-3">
             <thead>
                 <tr>
@@ -52,31 +30,25 @@ try {
                     <th>Defensa</th>
                     <th>Nivel</th>
                     <th>Tipo</th>
-                    <th>Evo ID</th>
                     <th>Imagen</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if ($digimones && $stmt->rowCount() > 0): ?>
+                <?php if (!empty($digimones)): ?>
                     <?php foreach ($digimones as $digimon): ?>
                         <tr>
-                            <td><?= $digimon['id'] ?></td>
-                            <td><?= $digimon['nombre'] ?></td>
-                            <td><?= $digimon['ataque'] ?></td>
-                            <td><?= $digimon['defensa'] ?></td>
-                            <td><?= $digimon['nivel'] ?></td>
-                            <td><?= $digimon['tipo'] ?></td>
-                            <td><?= $digimon['evo_id'] ?></td>
-                            <td><img src="../../digimones/<?= $digimon['nombre'] ?>/<?= $digimon['imagen'] ?>" alt="<?= $digimon['nombre'] ?>" width="50"></td>
-                            <td>
-                                <a href="datosDigimon.php?id=<?= $digimon['id'] ?>" class="btn btn-primary btn-sm">Ver Digimon</a>
-                            </td>
+                            <td><?= htmlspecialchars($digimon->id) ?></td>
+                            <td><?= htmlspecialchars($digimon->nombre) ?></td>
+                            <td><?= htmlspecialchars($digimon->ataque) ?></td>
+                            <td><?= htmlspecialchars($digimon->defensa) ?></td>
+                            <td><?= htmlspecialchars($digimon->nivel) ?></td>
+                            <td><?= htmlspecialchars($digimon->tipo) ?></td>
+                            <td><img src="/Digimon/digimones/<?= htmlspecialchars($digimon->nombre) ?>/<?= htmlspecialchars($digimon->imagen) ?>" alt="<?= htmlspecialchars($digimon->nombre) ?>" width="50"></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="9">No se encontraron digimones.</td>
+                        <td colspan="7">No se encontraron Digimones.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

@@ -13,20 +13,20 @@
       </thead>
       <tbody>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/views/user/list.php'">Listar Usuarios</button></td>
-          <td>Ver la lista de todos los usuarios</td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/show.php'">Ver mis Digimon</button></td>
+          <td>Ver la lista de todos mis Digimon</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/views/user/create.php'">Dar de alta un Usuario</button></td>
-          <td>Dar de alta a un usuario</td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/equipo/organize.php'">Organizar mi equipo</button></td>
+          <td>Organizar mi equipo de Digimon</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/views/digimon/create.php'">Dar de alta un Digimon</button></td>
-          <td>Registrar un nuevo Digimon</td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/juego/play.php'">Jugar partida</button></td>
+          <td>Iniciar una nueva partida</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/views/digimon/show.php'">Ver Digimones</button></td>
-          <td>Ver la lista de todos los Digimones</td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/evolucion.php'">Digievolucionar</button></td>
+          <td>Digievolucionar un Digimon</td>
         </tr>
       </tbody>
     </table>
