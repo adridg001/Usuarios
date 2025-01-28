@@ -9,6 +9,54 @@ class DigimonesController {
         $this->model = new DigimonModel();
     }
 
+ // Método para obtener los Digimones asignados a un usuario, máximo 3 de nivel 1
+ public function obtenerDigimonesPorUsuario($usuarioId) {
+    try {
+        // Obtiene los Digimones asignados al usuario de la base de datos
+        $conexion = db::conexion();
+        $sql = "SELECT * FROM digimones 
+                WHERE id IN (SELECT digimon_id FROM digimones_usuario WHERE usuario_id = :usuario_id)
+                AND nivel = 1 LIMIT 3";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':usuario_id', $usuarioId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    } catch (PDOException $e) {
+        return "Error: " . $e->getMessage();
+    }
+}
+
+// Método para asignar un Digimon por defecto a un usuario (nivel 1)
+public function asignarDigimonesPorDefecto(int $usuarioId): void {
+    try {
+        // Obtener Digimones de nivel 1 disponibles
+        $conexion = db::conexion();
+        $sql = "SELECT * FROM digimones WHERE nivel = 1";
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute();
+        $digimonesNivel1 = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        // Si hay menos de 3, asignar más Digimones
+        $digimonesAsignados = $this->obtenerDigimonesPorUsuario($usuarioId);
+        $digimonesFaltantes = 3 - count($digimonesAsignados);
+
+        for ($i = 0; $i < $digimonesFaltantes; $i++) {
+            // Asignar un Digimon aleatorio de nivel 1
+            $digimonAleatorio = $digimonesNivel1[array_rand($digimonesNivel1)];
+
+            // Insertar en la tabla 'digimones_usuario'
+            $sql = "INSERT INTO digimones_usuario (usuario_id, digimon_id, seleccionado) 
+                    VALUES (:usuario_id, :digimon_id, 0)";
+            $stmt = $conexion->prepare($sql);
+            $stmt->bindParam(':usuario_id', $usuarioId);
+            $stmt->bindParam(':digimon_id', $digimonAleatorio->id);
+            $stmt->execute();
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
+    
     public function listarPorUsuario(int $usuarioId): array {
         return $this->model->readByUsuario($usuarioId);
     }
