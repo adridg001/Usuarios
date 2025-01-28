@@ -3,7 +3,7 @@
     <h1 class="h2">Pagina de Inicio</h1>
   </div>
   <div id="contenido">
-    CONTENIDO DE DIGIMONES
+    <P>PREPARA TUS COMBATES</P>
     <table class="table">
       <thead>
         <tr>
