@@ -33,7 +33,7 @@ $nombreUsuario = $_SESSION["usuario"]->nombre;
           <td>Organizar mi equipo de Digimon</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/juego/play.php'">Jugar partida</button></td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/juego/jugar.php'">Jugar partida</button></td>
           <td>Iniciar una nueva partida</td>
         </tr>
         <tr>
