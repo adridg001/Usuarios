@@ -32,4 +32,22 @@ class UsersController {
        header($redireccion);
        exit();
    }
+
+ // Este método actualiza las estadísticas del usuario (ganadas o perdidas)
+ public function actualizarEstadisticas($usuarioId, $victoria) {
+    $conexion = db::conexion();  // Conexión a la base de datos
+
+    if ($victoria) {
+        // Si el usuario ganó, aumentamos las partidas ganadas
+        $sql = "UPDATE usuarios SET partidas_ganadas = partidas_ganadas + 1 WHERE id = :usuario_id";
+    } else {
+        // Si el usuario perdió, aumentamos las partidas perdidas
+        $sql = "UPDATE usuarios SET partidas_perdidas = partidas_perdidas + 1 WHERE id = :usuario_id";
+    }
+
+    $stmt = $conexion->prepare($sql);
+    $stmt->bindParam(':usuario_id', $usuarioId);
+    $stmt->execute();
+}
+
 }
