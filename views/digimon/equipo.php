@@ -1,47 +1,129 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../config/db.php'; // Ajusta la ruta según la estructura de tu proyecto
-require_once __DIR__ . '/../../controllers/digimonesController.php'; // Asegúrate de que esta ruta es correcta
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../controllers/DigimonesController.php';
+require_once __DIR__ . '/../../controllers/usersController.php';
 
+$digimonesController = new DigimonesController();
+$usuariosController = new UsersController();
+
+// Verifica si el usuario está autenticado
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: /Digimon/Usuarios/login.php");
+    header("Location: login.php");
     exit();
 }
 
-$usuarioId = $_SESSION['usuario_id'];
-$controlador = new DigimonesController();
-$digimones = $controlador->listarPorUsuario((int)$usuarioId);
+$usuarioId = $_SESSION['usuario_id'];  // Obtén el ID del usuario desde la sesión
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $equipo = $_POST['equipo'] ?? [];
-    if (count($equipo) == 3) {
-<<<<<<< HEAD
-        // Limpiar cualquier selección previa en la tabla 'equipo'
-$conexion = db::conexion();
-$stmtLimpiar = $conexion->prepare("DELETE FROM equipo WHERE usuario_id = :usuarioId");
-$stmtLimpiar->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
-$stmtLimpiar->execute();
-
-// Insertar los nuevos Digimones seleccionados en la tabla 'equipo'
-$stmtInsertar = $conexion->prepare("INSERT INTO equipo (usuario_id, digimon_id) VALUES (:usuarioId, :digimonId)");
-foreach ($equipo as $digimonId) {
-    $stmtInsertar->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
-    $stmtInsertar->bindParam(':digimonId', $digimonId, PDO::PARAM_INT);
-    $stmtInsertar->execute();
+// Obtener los digimones del usuario
+$digimonesUsuario = $digimonesController->obtenerDigimonesPorUsuario($usuarioId);
+if (count($digimonesUsuario) < 3) {
+    die("No tienes suficientes digimones en tu equipo.");
 }
 
-// Mensaje de éxito
-$mensaje = "¡Tu equipo ha sido guardado exitosamente!";
+$usuario = $usuariosController->ver($usuarioId);  // Obtén el nombre del usuario
 
-=======
-        // Guardar el equipo en la base de datos o en la sesión
-        $_SESSION['equipo'] = $equipo;
-        $mensaje = "¡Tu equipo ha sido guardado exitosamente!";
->>>>>>> 2fea91b479d8d8ae810dbac1a9978abb64f1200b
+// ** Definir las variables para la vista **
+$usuarioNombre = $usuario->nombre;
+$turnoJugador = 0;  // Este es el índice que vamos a usar para iterar por los digimones del jugador
+
+// Seleccionar rival (en este ejemplo, tomamos al azar a otro usuario)
+$rivalId = obtenerRivalAleatorio($usuarioId);
+$digimonesRival = $digimonesController->obtenerDigimonesPorUsuario($rivalId);
+
+// ** Depuración**: Mostrar el ID del rival y el número de digimones
+echo "ID del rival: " . $rivalId . "<br>";
+echo "Número de digimones del rival: " . count($digimonesRival) . "<br>";
+
+// Verificar que el rival tiene al menos 3 digimones
+if (count($digimonesRival) < 3) {
+    die("El rival no tiene suficientes digimones.");
+}
+
+// Función para obtener un rival aleatorio
+function obtenerRivalAleatorio($usuarioId) {
+    $conexion = db::conexion();
+
+    $sql = "SELECT id FROM usuarios WHERE id != :usuario_id ORDER BY RAND() LIMIT 1";
+    $stmt = $conexion->prepare($sql);
+    $stmt->bindParam(':usuario_id', $usuarioId);
+    $stmt->execute();
+    $rival = $stmt->fetch(PDO::FETCH_OBJ);
+    
+    if (!$rival) {
+        die("No se pudo obtener un rival aleatorio.");
+    }
+    
+    return $rival->id;
+}
+
+// Función para calcular el valor total de un digimon
+function calcularPoderDigimon($digimon, $tipoRival) {
+    $tablaTipos = [
+        'VACUNA' => ['VACUNA' => 10, 'VIRUS' => 5, 'ANIMAL' => -5, 'PLANTA' => -10, 'ELEMENTAL' => 0],
+        'VIRUS' => ['VACUNA' => -10, 'VIRUS' => 10, 'ANIMAL' => 5, 'PLANTA' => -5, 'ELEMENTAL' => 0],
+        'ANIMAL' => ['VACUNA' => -5, 'VIRUS' => -10, 'ANIMAL' => 10, 'PLANTA' => 5, 'ELEMENTAL' => -5],
+        'PLANTA' => ['VACUNA' => 5, 'VIRUS' => -5, 'ANIMAL' => 10, 'PLANTA' => 10, 'ELEMENTAL' => -5],
+        'ELEMENTAL' => ['VACUNA' => -10, 'VIRUS' => 5, 'ANIMAL' => -5, 'PLANTA' => 10, 'ELEMENTAL' => 10]
+    ];
+
+    $tipoUsuario = $digimon->tipo;
+    $modificadorTipo = isset($tablaTipos[$tipoUsuario][$tipoRival]) ? $tablaTipos[$tipoUsuario][$tipoRival] : 0;
+    $modificadorRandom = rand(1, 50);  // Puedes cambiar esto a 0 temporalmente para depuración
+
+    $poderTotal = (int)$digimon->ataque + (int)$digimon->defensa + $modificadorTipo + $modificadorRandom;
+    return $poderTotal;
+}
+
+// Función para obtener el tipo en formato adecuado
+function obtenerTipo($tipoId) {
+    $tipoId = ucfirst(strtolower($tipoId));
+
+    $tiposValidos = ['Vacuna', 'Virus', 'Animal', 'Planta', 'Elemental'];
+
+    if (!in_array($tipoId, $tiposValidos)) {
+        die("Tipo de digimon inválido. Tipo recibido: $tipoId");
+    }
+
+    return $tipoId;
+}
+
+// Realizar los combates
+$victoriasUsuario = 0;
+$victoriasRival = 0;
+
+for ($i = 0; $i < 3; $i++) {
+    $digimonUsuario = $digimonesUsuario[$i];
+    if ($digimonUsuario === null) {
+        die("El digimon del usuario no existe.");
+    }
+    $digimonRival = $digimonesRival[$i];
+    if ($digimonRival === null) {
+        die("El digimon del rival no existe.");
+    }
+
+    $poderUsuario = calcularPoderDigimon($digimonUsuario, obtenerTipo($digimonRival->tipo));
+    $poderRival = calcularPoderDigimon($digimonRival, obtenerTipo($digimonUsuario->tipo));
+
+    // Depuración: Ver los valores de los poderes calculados
+    echo "Poder Usuario (Digimon: {$digimonUsuario->nombre}): $poderUsuario<br>";
+    echo "Poder Rival (Digimon: {$digimonRival->nombre}): $poderRival<br>";
+
+    if ($poderUsuario > $poderRival) {
+        $victoriasUsuario++;
     } else {
-        $mensaje = "Debes seleccionar exactamente 3 Digimones para formar tu equipo.";
+        $victoriasRival++;
     }
 }
+
+if ($victoriasUsuario >= 2) {
+    $mensaje = "¡Has ganado la partida!";
+    $usuariosController->actualizarEstadisticas($usuarioId, true);
+} else {
+    $mensaje = "¡Has perdido la partida!";
+    $usuariosController->actualizarEstadisticas($usuarioId, false);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -49,114 +131,173 @@ $mensaje = "¡Tu equipo ha sido guardado exitosamente!";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seleccionar Equipo - Digimon Battle</title>
-    <link href="/Digimon/assets/css/bootstrap.min.css" rel="stylesheet">
+    <title>Campo de Batalla - Digimones</title>
     <style>
         body {
-            background: linear-gradient(to bottom, #4e54c8, #8f94fb);
-            font-family: 'Trebuchet MS', sans-serif;
-            color: #fff;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin-top: 20px;
-            text-shadow: 2px 2px 4px #000;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #222;
         }
 
         .container {
-            margin-top: 40px;
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1c1c1c, #444);
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
         }
 
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            justify-items: center;
+        h1 {
+            text-align: center;
+            color: #ffcc00;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+            font-size: 36px;
         }
 
-        .gallery-item {
-            background: rgba(0, 0, 0, 0.6);
+        .battlefield {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            margin-top: 20px;
+        }
+
+        .player {
+            width: 45%;
+            text-align: center;
+            background: #222;
+            padding: 20px;
             border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
         }
 
-        .gallery-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
-        }
-
-        .gallery-item img {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-        }
-
-        .gallery-item p {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            color: #ffeb3b;
-            text-shadow: 1px 1px 2px #000;
-        }
-
-        input[type="checkbox"] {
-            margin-top: 10px;
-            width: 20px;
-            height: 20px;
-        }
-
-        .btn {
-            font-size: 1.2rem;
-            background-color: #ff5722;
+        .player h2 {
+            margin-bottom: 15px;
             color: #fff;
+            font-size: 22px;
+        }
+
+        .player img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 5px solid #ffcc00;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+        }
+
+        .digimon-name {
+            margin-top: 10px;
+            color: #ffcc00;
+            font-size: 18px;
+        }
+
+        .digimon-info {
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        .digimon-info p {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .battle-info {
+            width: 10%;
+            text-align: center;
+            color: #fff;
+        }
+
+        .battle-info h3 {
+            margin-bottom: 10px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        .battle-info p {
+            font-size: 1.2em;
+            color: #fff;
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .button {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 25px;
+            background-color: #28a745;
+            color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
-        .btn:hover {
-            background-color: #ff3d00;
-            transform: scale(1.05);
+        .button:hover {
+            background-color: #218838;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
         }
 
-        .alert {
-            font-size: 1.2rem;
-            margin-top: 20px;
+        .button:active {
+            background-color: #1e7e34;
+            transform: scale(0.98);
         }
 
-        a.btn {
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>¡Forma tu Equipo de Digimon!</h1>
-        <?php if (!empty($mensaje)): ?>
-            <div class="alert alert-info"><?= $mensaje ?></div>
-        <?php endif; ?>
-        <form method="post" action="equipo.php">
-            <div class="gallery">
-                <?php foreach ($digimones as $digimon): ?>
-                    <div class="gallery-item">
-                        <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars($digimon->nombre) ?>/<?= htmlspecialchars($digimon->imagen) ?>" 
-                             alt="<?= htmlspecialchars($digimon->nombre) ?>">
-                        <p><?= htmlspecialchars($digimon->nombre) ?></p>
-                        <input type="checkbox" name="equipo[]" value="<?= htmlspecialchars($digimon->id) ?>" 
-                            <?= (isset($_SESSION['equipo']) && in_array($digimon->id, $_SESSION['equipo'])) ? 'checked' : '' ?>>
-                    </div>
-                <?php endforeach; ?>
+        <h1>Campo de Batalla - Digimones</h1>
+        <div class="battlefield">
+            <!-- Jugador -->
+            <div class="player">
+                <h2>Jugador: <?php echo $usuarioNombre; ?></h2>
+                <img src="ruta/del/digimon/usuario.jpg" alt="Digimon del Jugador">
+                <div class="digimon-name"><?php echo $digimonesUsuario[$turnoJugador]->nombre; ?></div>
+                <div class="digimon-info">
+                    <p>Tipo: <?php echo obtenerTipo($digimonesUsuario[$turnoJugador]->tipo); ?></p>
+                    <p>Poder: <?php echo calcularPoderDigimon($digimonesUsuario[$turnoJugador], obtenerTipo($digimonesRival[0]->tipo)); ?></p>
+                </div>
             </div>
-            <button type="submit" class="btn mt-3">Guardar Equipo</button>
-        </form>
-        <a href="../../index.php" class="btn mt-3">Volver a Inicio</a>
+
+            <!-- Información de combate -->
+            <div class="battle-info">
+                <h3>VS</h3>
+                <p>Resultado: <?php echo $mensaje; ?></p>
+            </div>
+
+            <!-- Rival -->
+            <div class="player">
+                <h2>Rival: <?php echo $rivalId; ?></h2>
+                <img src="ruta/del/digimon/rival.jpg" alt="Digimon del Rival">
+                <div class="digimon-name"><?php echo $digimonesRival[0]->nombre; ?></div>
+                <div class="digimon-info">
+                    <p>Tipo: <?php echo obtenerTipo($digimonesRival[0]->tipo); ?></p>
+                    <p>Poder: <?php echo calcularPoderDigimon($digimonesRival[0], obtenerTipo($digimonesUsuario[0]->tipo)); ?></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="result">
+            <?php echo $mensaje; ?>
+        </div>
+
+        <button class="button" onclick="location.reload()">Volver a jugar</button>
     </div>
 </body>
 </html>
