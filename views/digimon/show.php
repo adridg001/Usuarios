@@ -1,22 +1,16 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../config/db.php'; // Ajusta la ruta según la estructura de tu proyecto
+require_once __DIR__ . '/../../controllers/digimonesController.php'; // Asegúrate de que esta ruta es correcta
 
-// Verificar si el usuario está logueado
 if (!isset($_SESSION['usuario_id'])) {
-    // Redirigir al login si no está logueado
-    header('Location: /Digimon/Usuarios/loginUsuario.php');
+    header("Location: /Digimon/Usuarios/login.php");
     exit();
 }
 
-require_once __DIR__ . '/../../controllers/DigimonesController.php'; // Asegúrate de que la ruta es correcta
-$digimonesController = new DigimonesController();
-$usuario_id = $_SESSION['usuario_id'];
-
-// Asignar Digimones por defecto si es necesario
-$digimonesController->asignarDigimonesPorDefecto($usuario_id);
-
-// Obtener los Digimones del usuario
-$digimones = $digimonesController->obtenerDigimonesPorUsuario($usuario_id);
+$usuarioId = $_SESSION['usuario_id'];
+$controlador = new DigimonesController();
+$digimones = $controlador->listarPorUsuario((int)$usuarioId);
 ?>
 
 <!DOCTYPE html>
@@ -52,10 +46,7 @@ $digimones = $digimonesController->obtenerDigimonesPorUsuario($usuario_id);
                             <td><?= htmlspecialchars($digimon->defensa) ?></td>
                             <td><?= htmlspecialchars($digimon->nivel) ?></td>
                             <td><?= htmlspecialchars($digimon->tipo) ?></td>
-                            <td>
-                                <img src="/Digimon/digimones/<?= htmlspecialchars($digimon->nombre) ?>/<?= htmlspecialchars($digimon->imagen) ?>" 
-                                     alt="<?= htmlspecialchars($digimon->nombre) ?>" width="50">
-                            </td>
+                            <td><img src="/Digimon/digimones/<?= htmlspecialchars($digimon->nombre) ?>/<?= htmlspecialchars($digimon->imagen) ?>" alt="<?= htmlspecialchars($digimon->nombre) ?>" width="50"></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
