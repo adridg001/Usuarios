@@ -17,7 +17,7 @@
           <td>Ver la lista de todos mis Digimon</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/equipo/organize.php'">Organizar mi equipo</button></td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/equipo.php'">Organizar mi equipo</button></td>
           <td>Organizar mi equipo de Digimon</td>
         </tr>
         <tr>
