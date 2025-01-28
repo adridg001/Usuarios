@@ -15,6 +15,7 @@ $digimones = $controlador->listarPorUsuario((int)$usuarioId);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $equipo = $_POST['equipo'] ?? [];
     if (count($equipo) == 3) {
+<<<<<<< HEAD
         // Limpiar cualquier selección previa en la tabla 'equipo'
 $conexion = db::conexion();
 $stmtLimpiar = $conexion->prepare("DELETE FROM equipo WHERE usuario_id = :usuarioId");
@@ -32,6 +33,11 @@ foreach ($equipo as $digimonId) {
 // Mensaje de éxito
 $mensaje = "¡Tu equipo ha sido guardado exitosamente!";
 
+=======
+        // Guardar el equipo en la base de datos o en la sesión
+        $_SESSION['equipo'] = $equipo;
+        $mensaje = "¡Tu equipo ha sido guardado exitosamente!";
+>>>>>>> 2fea91b479d8d8ae810dbac1a9978abb64f1200b
     } else {
         $mensaje = "Debes seleccionar exactamente 3 Digimones para formar tu equipo.";
     }
