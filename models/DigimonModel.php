@@ -45,6 +45,20 @@ class DigimonModel
         }
     }
 
+    public function readByUsuario(int $usuarioId): array {
+        try {
+            $sql = "SELECT d.* FROM digimones d
+                    JOIN DIGIMONES_USUARIO du ON d.id = du.digimon_id
+                    WHERE du.usuario_id = :usuario_id";
+            $sentencia = $this->conexion->prepare($sql);
+            $sentencia->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            $sentencia->execute();
+            return $sentencia->fetchAll(PDO::FETCH_OBJ);
+        } catch (Exception $e) {
+            echo 'Excepción capturada: ', $e->getMessage(), "<br>";
+            return [];
+        }
+    }
     public function readAll(): array {
         try {
             $sql = "SELECT * FROM digimones";

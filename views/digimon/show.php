@@ -1,13 +1,16 @@
 <?php
-require_once '../../config/db.php'; // Ajusta la ruta según la estructura de tu proyecto
-require_once '../../controllers/digimonesController.php'; // Asegúrate de que esta ruta es correcta
-
 session_start();
-$usuarioId = $_SESSION['usuario_id']; // Asegúrate de que el ID del usuario está almacenado en la sesión
+require_once __DIR__ . '/../../config/db.php'; // Ajusta la ruta según la estructura de tu proyecto
+require_once __DIR__ . '/../../controllers/digimonesController.php'; // Asegúrate de que esta ruta es correcta
 
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: /Digimon/Usuarios/login.php");
+    exit();
+}
+
+$usuarioId = $_SESSION['usuario_id'];
 $controlador = new DigimonesController();
-$digimones = $controlador->listarPorUsuario($usuarioId);
-
+$digimones = $controlador->listarPorUsuario((int)$usuarioId);
 ?>
 
 <!DOCTYPE html>

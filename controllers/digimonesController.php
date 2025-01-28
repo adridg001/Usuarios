@@ -9,6 +9,9 @@ class DigimonesController {
         $this->model = new DigimonModel();
     }
 
+    public function listarPorUsuario(int $usuarioId): array {
+        return $this->model->readByUsuario($usuarioId);
+    }
     public function crear(array $arrayDigimon): void {
         try {
             $id = $this->model->insert($arrayDigimon);
