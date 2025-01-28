@@ -295,6 +295,7 @@ h1 {
         </div>
 
         <button class="button" onclick="location.reload()">Volver a jugar</button>
+        <button class="button" onclick="window.location.href='../../index.php'">Volver al inicio</button>
     </div>
 </body>
 </html>
