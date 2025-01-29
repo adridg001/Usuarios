@@ -115,9 +115,11 @@ for ($i = 0; $i < 3; $i++) {
 if ($victoriasUsuario >= 2) {
     $mensaje = "¡Has ganado la partida!";
     $usuariosController->actualizarEstadisticas($usuarioId, true);
+    $usuariosController->actualizarEstadisticas($rivalId, false);
 } else {
     $mensaje = "¡Has perdido la partida!";
     $usuariosController->actualizarEstadisticas($usuarioId, false);
+    $usuariosController->actualizarEstadisticas($rivalId, true);
 }
 
 ?>
