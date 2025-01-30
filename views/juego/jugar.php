@@ -54,7 +54,7 @@ function calcularPoderDigimon($digimon, $tipoRival) {
     return $digimon->ataque + $digimon->defensa + $modificadorTipo + $modificadorRandom;
 }
 
-// Realizar los combates
+// Inicializar las variables para contar victorias y derrotas
 $victoriasUsuario = 0;
 $victoriasRival = 0;
 $rondas = [];
@@ -63,9 +63,11 @@ for ($i = 0; $i < 3; $i++) {
     $digimonUsuario = $digimonesUsuario[$i];
     $digimonRival = $digimonesRival[$i];
 
+    // Calcular el poder de cada Digimon
     $poderUsuario = calcularPoderDigimon($digimonUsuario, $digimonRival->tipo);
     $poderRival = calcularPoderDigimon($digimonRival, $digimonUsuario->tipo);
 
+    // Determinar el resultado de la ronda
     if ($poderUsuario > $poderRival) {
         $resultado = "Ganaste esta ronda";
         $victoriasUsuario++;
@@ -74,6 +76,7 @@ for ($i = 0; $i < 3; $i++) {
         $victoriasRival++;
     }
 
+    // Almacenar el resultado de la ronda
     $rondas[] = [
         "numero" => $i + 1,
         "digimonUsuario" => $digimonUsuario,
@@ -86,9 +89,26 @@ for ($i = 0; $i < 3; $i++) {
 
 // Determinar el ganador de la partida
 $mensajeFinal = ($victoriasUsuario >= 2) ? "¡Has ganado la partida!" : "¡Has perdido la partida!";
+
+// Actualizar las estadísticas del usuario y rival
 $usuariosController->actualizarEstadisticas($usuarioId, $victoriasUsuario >= 2);
 $usuariosController->actualizarEstadisticas($rivalId, $victoriasUsuario < 2);
+
+// Obtener las estadísticas actualizadas
+$usuarioActualizado = $usuariosController->ver($usuarioId);
+
+// Verificar si el usuario ha jugado 10 partidas
+if ($usuarioActualizado->partidas_jugadas % 10 === 0) {
+    // Regalar un Digimon de nivel 1 que no tenga
+    $digimonNuevo = $digimonesController->obtenerDigimonPartida($usuarioId);
+    if ($digimonNuevo) {
+        // Agregar el nuevo Digimon a la lista del usuario
+        $digimonesController->agregarDigimonAUsuario($usuarioId, $digimonNuevo->id);
+        echo "<div class='result'>¡Felicidades! Has recibido un nuevo Digimon de nivel 1: {$digimonNuevo->nombre}</div>";
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
