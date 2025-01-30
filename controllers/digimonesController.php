@@ -107,4 +107,30 @@ public function asignarDigimonesPorDefecto(int $usuarioId): void {
             echo 'Excepción capturada: ', $e->getMessage(), "<br>";
         }
     }
+
+ // Obtener un Digimon de nivel 1 que no esté en la lista del usuario
+    public function obtenerDigimonPartida($usuarioId) {
+        $conexion = db::conexion();
+        $sql = "
+            SELECT * FROM digimones
+            WHERE nivel = 1 
+            AND id NOT IN (SELECT digimon_id FROM digimones_usuario WHERE usuario_id = :usuario_id)
+            ORDER BY RAND() LIMIT 1
+        ";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':usuario_id', $usuarioId);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ); // Devuelve un digimon de nivel 1 que no sea del usuario
+    }
+
+    // Agregar un digimon a la lista de un usuario
+    public function agregarDigimonAUsuario($usuarioId, $digimonId) {
+        $conexion = db::conexion();
+        $sql = "INSERT INTO digimones_usuario (usuario_id, digimon_id) VALUES (:usuario_id, :digimon_id)";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':usuario_id', $usuarioId);
+        $stmt->bindParam(':digimon_id', $digimonId);
+        return $stmt->execute(); // Retorna verdadero si la inserción es exitosa
+    }
+
 }
