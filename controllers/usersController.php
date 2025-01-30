@@ -15,9 +15,16 @@ class UsersController {
     }
 
     public function ver(int $id): ?stdClass
-    {
-        return $this->model->read($id);
+{
+    $usuario = $this->model->read($id);  // Obtener el usuario de la base de datos
+
+    // Si el usuario existe, calculamos las partidas jugadas
+    if ($usuario) {
+        $usuario->partidas_jugadas = $usuario->partidas_ganadas + $usuario->partidas_perdidas;
     }
+
+    return $usuario;
+}
 
     public function listar (){
         return $this->model->readAll ();
