@@ -9,17 +9,21 @@ class DigimonesController {
         $this->model = new DigimonModel();
     }
 
- // Método para obtener los Digimones asignados a un usuario, máximo 3 de nivel 1
- public function obtenerDigimonesPorUsuario($usuarioId) {
+// Método para obtener los Digimones seleccionados por el usuario en su equipo
+public function obtenerEquipoPorUsuario($usuarioId) {
     try {
-        // Obtiene los Digimones asignados al usuario de la base de datos
+        // Conexión a la base de datos
         $conexion = db::conexion();
-        $sql = "SELECT * FROM digimones 
-                WHERE id IN (SELECT digimon_id FROM digimones_usuario WHERE usuario_id = :usuario_id)
-                AND nivel = 1 LIMIT 3";
+        
+        // Consulta para obtener los Digimones en el equipo del usuario
+        $sql = "SELECT d.* FROM digimones d
+                INNER JOIN equipo e ON d.id = e.digimon_id
+                WHERE e.usuario_id = :usuario_id";
+        
         $stmt = $conexion->prepare($sql);
-        $stmt->bindParam(':usuario_id', $usuarioId);
+        $stmt->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
         $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     } catch (PDOException $e) {
         return "Error: " . $e->getMessage();
