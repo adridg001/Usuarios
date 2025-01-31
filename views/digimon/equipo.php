@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../config/db.php'; // Ajusta la ruta según la estructura de tu proyecto
-require_once __DIR__ . '/../../controllers/digimonesController.php'; // Asegúrate de que esta ruta es correcta
+require_once __DIR__ . '/../../config/db.php'; 
+require_once __DIR__ . '/../../controllers/digimonesController.php'; 
 
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: /Digimon/Usuarios/login.php");
@@ -12,31 +12,44 @@ $usuarioId = $_SESSION['usuario_id'];
 $controlador = new DigimonesController();
 $digimones = $controlador->listarPorUsuario((int)$usuarioId);
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $equipo = $_POST['equipo'] ?? [];
-    if (count($equipo) == 3) {
-        // Limpiar cualquier selección previa en la tabla 'equipo'
+// Recuperar el equipo actual desde la base de datos
 $conexion = db::conexion();
-$stmtLimpiar = $conexion->prepare("DELETE FROM equipo WHERE usuario_id = :usuarioId");
-$stmtLimpiar->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
-$stmtLimpiar->execute();
+$sqlEquipo = "SELECT digimon_id FROM equipo WHERE usuario_id = :usuarioId";
+$stmtEquipo = $conexion->prepare($sqlEquipo);
+$stmtEquipo->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+$stmtEquipo->execute();
+$equipoActual = $stmtEquipo->fetchAll(PDO::FETCH_COLUMN);
 
-// Insertar los nuevos Digimones seleccionados en la tabla 'equipo'
-$stmtInsertar = $conexion->prepare("INSERT INTO equipo (usuario_id, digimon_id) VALUES (:usuarioId, :digimonId)");
-foreach ($equipo as $digimonId) {
-    $stmtInsertar->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
-    $stmtInsertar->bindParam(':digimonId', $digimonId, PDO::PARAM_INT);
-    $stmtInsertar->execute();
-}
+// Si se ha enviado el formulario, actualizar equipo
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nuevoEquipo = $_POST['equipo'] ?? [];
 
-// Mensaje de éxito
-$mensaje = "¡Tu equipo ha sido guardado exitosamente!";
+    if (count($nuevoEquipo) == 3) {
+        // Limpiar el equipo anterior en la base de datos
+        $stmtLimpiar = $conexion->prepare("DELETE FROM equipo WHERE usuario_id = :usuarioId");
+        $stmtLimpiar->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+        $stmtLimpiar->execute();
 
+        // Insertar los nuevos Digimones en la tabla 'equipo'
+        $stmtInsertar = $conexion->prepare("INSERT INTO equipo (usuario_id, digimon_id) VALUES (:usuarioId, :digimonId)");
+        foreach ($nuevoEquipo as $digimonId) {
+            $stmtInsertar->bindParam(':usuarioId', $usuarioId, PDO::PARAM_INT);
+            $stmtInsertar->bindParam(':digimonId', $digimonId, PDO::PARAM_INT);
+            $stmtInsertar->execute();
+        }
+
+        // Guardar los IDs de los Digimones en la sesión
+        $_SESSION['equipo'] = $nuevoEquipo;
+
+        // Confirmar actualización
+        $equipoActual = $nuevoEquipo;
+        $mensaje = "¡Tu equipo ha sido guardado exitosamente!";
     } else {
         $mensaje = "Debes seleccionar exactamente 3 Digimones para formar tu equipo.";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
