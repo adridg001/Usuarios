@@ -14,7 +14,7 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 $usuarioId = $_SESSION['usuario_id'];  
-$digimonesUsuario = $digimonesController->obtenerDigimonesPorUsuario($usuarioId);
+$digimonesUsuario = $digimonesController->obtenerEquipoPorUsuario($usuarioId);
 
 if (count($digimonesUsuario) < 3) {
     die("No tienes suficientes digimones en tu equipo.");
@@ -23,7 +23,7 @@ if (count($digimonesUsuario) < 3) {
 $usuario = $usuariosController->ver($usuarioId);  
 $rivalId = obtenerRivalAleatorio($usuarioId);
 $rival = $usuariosController->ver($rivalId);
-$digimonesRival = $digimonesController->obtenerDigimonesPorUsuario($rivalId);
+$digimonesRival = $digimonesController->obtenerEquipoPorUsuario($rivalId);
 
 if (count($digimonesRival) < 3) {
     die("El rival no tiene suficientes digimones.");
