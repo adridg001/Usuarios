@@ -137,13 +137,13 @@ if ($usuarioActualizado->partidas_jugadas % 10 === 0) {
             <div class="battle">
                 <div class="player">
                     <h2>Jugador: <?= $usuario->nombre; ?></h2>
-                    <img src="ruta/digimon/<?= $ronda['digimonUsuario']->id; ?>.jpg" alt="<?= $ronda['digimonUsuario']->nombre; ?>">
-                    <p><?= $ronda['digimonUsuario']->nombre; ?> (Poder: <?= $ronda['poderUsuario']; ?>)</p>
+                    <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars(string: $ronda['digimonUsuario']->nombre); ?>/<?= htmlspecialchars($ronda['digimonUsuario']->imagen); ?>" alt="<?= htmlspecialchars($ronda['digimonUsuario']->nombre); ?>">
+                    <p><?= htmlspecialchars($ronda['digimonUsuario']->nombre); ?> (Poder: <?= htmlspecialchars($ronda['poderUsuario']); ?>)</p>
                 </div>
                 <div class="player">
                     <h2>Rival</h2>
-                    <img src="ruta/digimon/<?= $ronda['digimonRival']->id; ?>.jpg" alt="<?= $ronda['digimonRival']->nombre; ?>">
-                    <p><?= $ronda['digimonRival']->nombre; ?> (Poder: <?= $ronda['poderRival']; ?>)</p>
+                    <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars(string: $ronda['digimonRival']->nombre); ?>/<?= htmlspecialchars($ronda['digimonRival']->imagen); ?>" alt="<?= htmlspecialchars($ronda['digimonRival']->nombre); ?>">
+                    <p><?= htmlspecialchars($ronda['digimonRival']->nombre); ?> (Poder: <?= htmlspecialchars($ronda['poderRival']); ?>)</p>
                 </div>
             </div>
             <div class="result"><?= $ronda['resultado']; ?></div>
