@@ -163,7 +163,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <button type="submit" class="btn mt-3">Guardar Equipo</button>
         </form>
+        <br>
         <a href="../../index.php" class="btn mt-3">Volver a Inicio</a>
+        <br>
     </div>
 </body>
 </html>
