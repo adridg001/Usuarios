@@ -59,6 +59,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Seleccionar Equipo - Digimon Battle</title>
     <link href="/Digimon/assets/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+        }
         body {
             background: linear-gradient(to bottom, #4e54c8, #8f94fb);
             font-family: 'Trebuchet MS', sans-serif;
@@ -73,7 +79,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .container {
-            margin-top: 40px;
+            margin-top: 1%;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
 
         .gallery {
@@ -89,6 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            margin-top: 2%;
         }
 
         .gallery-item:hover {
@@ -126,6 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 10px 20px;
             border-radius: 5px;
             transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            margin-top: 4%;
         }
 
         .btn:hover {
@@ -140,6 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         a.btn {
             margin-top: 20px;
+            text-decoration: none;
         }
     </style>
 </head>

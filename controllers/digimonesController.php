@@ -16,9 +16,10 @@ public function obtenerEquipoPorUsuario($usuarioId) {
         $conexion = db::conexion();
         
         // Consulta para obtener los Digimones en el equipo del usuario
-        $sql = "SELECT d.* FROM digimones d
-                INNER JOIN equipo e ON d.id = e.digimon_id
-                WHERE e.usuario_id = :usuario_id";
+        $sql = "SELECT digimones.* 
+                FROM digimones
+                INNER JOIN equipo ON digimones.id = equipo.digimon_id
+                WHERE equipo.usuario_id = :usuario_id";
         
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
