@@ -41,7 +41,7 @@ public function asignarDigimonesPorDefecto(int $usuarioId): void {
         $digimonesNivel1 = $stmt->fetchAll(PDO::FETCH_OBJ);
 
         // Si hay menos de 3, asignar más Digimones
-        $digimonesAsignados = $this->obtenerDigimonesPorUsuario($usuarioId);
+        $digimonesAsignados = $this->obtenerEquipoPorUsuario($usuarioId);
         $digimonesFaltantes = 3 - count($digimonesAsignados);
 
         for ($i = 0; $i < $digimonesFaltantes; $i++) {
