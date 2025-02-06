@@ -93,7 +93,6 @@ $mensajeFinal = ($victoriasUsuario >= 2) ? "¡Has ganado la partida!" : "¡Has p
 
 // Actualizar las estadísticas del usuario y rival
 $usuariosController->actualizarEstadisticas($usuarioId, $victoriasUsuario >= 2);
-$usuariosController->actualizarEstadisticas($rivalId, $victoriasUsuario < 2);
 
 // Obtener las estadísticas actualizadas
 $usuarioActualizado = $usuariosController->ver($usuarioId);
