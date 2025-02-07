@@ -236,7 +236,7 @@ a:hover {
         <?php foreach ($digimones as $digimon): ?>
             <?php if ($digimon->nivel < 4): ?>
                 <div class="digimon-item">
-                    <img src="/Digimon/Administracion/digimones/<?= $digimon->imagen ?>" alt="<?= $digimon->nombre ?>">
+                    <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars($digimon->nombre) ?>/<?= htmlspecialchars($digimon->imagen) ?>" >
                     <h3><?= $digimon->nombre ?></h3>
                     <p>Nivel <?= $digimon->nivel ?></p>
                     
