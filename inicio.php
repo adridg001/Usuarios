@@ -25,19 +25,33 @@ $nombreUsuario = $_SESSION["usuario"]->nombre;
       </thead>
       <tbody>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/show.php'">Ver mis Digimon</button></td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/show.php'">
+          <i class="fa-solid fa-eye fa-bounce"></i>  Ver mis Digimon
+          </button>
+        </td>
           <td>Ver la lista de todos mis Digimon</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/equipo.php'">Organizar mi equipo</button></td>
+          <td>
+    <button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/equipo.php'">
+    <i class="fa-solid fa-user fa-bounce"></i>  Organizar mi equipo
+    </button>
+      </td>
           <td>Organizar mi equipo de Digimon</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/juego/jugar.php'">Jugar partida</button></td>
+          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/juego/jugar.php'">
+          <i class="fa-solid fa-fire fa-beat"></i> Jugar partida
+          </button>
+        </td>
           <td>Iniciar una nueva partida</td>
         </tr>
         <tr>
-          <td><button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/evolucion.php'">Digievolucionar</button></td>
+          <td>
+            <button class="btn btn-primary" onclick="location.href='/Digimon/Usuarios/views/digimon/evolucion.php'">
+            <i class="fa-solid fa-dragon fa-fade"></i>  Digievolucionar
+            </button>
+          </td>
           <td>Digievolucionar un Digimon</td>
         </tr>
       </tbody>

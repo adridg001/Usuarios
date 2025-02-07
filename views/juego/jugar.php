@@ -67,8 +67,50 @@ $rival = $usuariosController->ver($rivalId);
 $digimonesRival = $digimonesController->obtenerEquipoPorUsuario($rivalId);
 
 if (count($digimonesRival) < 3) {
-    die("El rival $rivalId no tiene suficientes digimones.");
+    $conexion = db::conexion();
+
+    while (count($digimonesRival) < 3) {
+        // 1. Seleccionar un Digimon de nivel 1 que el rival no tenga
+        $sqlSelectRival = "SELECT digimones.* 
+                           FROM digimones
+                           WHERE digimones.nivel = 1
+                           AND digimones.id NOT IN (
+                               SELECT equipo.digimon_id 
+                               FROM equipo 
+                               WHERE equipo.usuario_id = :rival_id
+                           )
+                           ORDER BY RAND()
+                           LIMIT 1";
+
+        $stmtSelectRival = $conexion->prepare($sqlSelectRival);
+        $stmtSelectRival->bindParam(':rival_id', $rivalId);
+        $stmtSelectRival->execute();
+        $digimonNuevoRival = $stmtSelectRival->fetch(PDO::FETCH_OBJ);
+
+        // Si no hay más Digimones disponibles, salir del bucle
+        if (!$digimonNuevoRival) {
+            break;
+        }
+
+        // 2. Añadir el Digimon al equipo del rival
+        $sqlInsertarEquipoRival = "INSERT INTO equipo (usuario_id, digimon_id) VALUES (:rival_id, :digimon_id)";
+        $stmtInsertarEquipoRival = $conexion->prepare($sqlInsertarEquipoRival);
+        $stmtInsertarEquipoRival->bindParam(':rival_id', $rivalId, PDO::PARAM_INT);
+        $stmtInsertarEquipoRival->bindParam(':digimon_id', $digimonNuevoRival->id, PDO::PARAM_INT);
+        $stmtInsertarEquipoRival->execute();
+
+        // 3. Añadir el Digimon a la lista general de Digimones del rival
+        $sqlInsertarDigimonesRival = "INSERT INTO digimones_usuario (usuario_id, digimon_id) VALUES (:rival_id, :digimon_id)";
+        $stmtInsertarDigimonesRival = $conexion->prepare($sqlInsertarDigimonesRival);
+        $stmtInsertarDigimonesRival->bindParam(':rival_id', $rivalId, PDO::PARAM_INT);
+        $stmtInsertarDigimonesRival->bindParam(':digimon_id', $digimonNuevoRival->id, PDO::PARAM_INT);
+        $stmtInsertarDigimonesRival->execute();
+
+        // Añadir el nuevo Digimon a la lista actual de Digimones del rival para que el bucle lo reconozca
+        $digimonesRival[] = $digimonNuevoRival;
+    }
 }
+
 
 function obtenerRivalAleatorio($usuarioId) {
     $conexion = db::conexion();
