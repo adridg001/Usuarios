@@ -17,7 +17,48 @@ $usuarioId = $_SESSION['usuario_id'];
 $digimonesUsuario = $digimonesController->obtenerEquipoPorUsuario($usuarioId);
 
 if (count($digimonesUsuario) < 3) {
-    die("No tienes suficientes digimones en tu equipo.");
+    $conexion = db::conexion();
+
+    while (count($digimonesUsuario) < 3) {
+        // 1. Obtenenemos un digimon y comprobamos que no sea idéntico a ninguno que tenga el usuario en su equipo
+        $sqlSelect = "SELECT digimones.* 
+                      FROM digimones
+                      WHERE digimones.nivel = 1
+                      AND digimones.id NOT IN (
+                          SELECT equipo.digimon_id 
+                          FROM equipo 
+                          WHERE equipo.usuario_id = :usuario_id
+                      )
+                      ORDER BY RAND()
+                      LIMIT 1";
+
+        $stmtSelect = $conexion->prepare($sqlSelect);
+        $stmtSelect->bindParam(':usuario_id', $usuarioId);
+        $stmtSelect->execute();
+        $digimonNuevo = $stmtSelect->fetch(PDO::FETCH_OBJ);
+
+        // Si no hay más Digimon disponibles, salimos del bucle
+        if (!$digimonNuevo) {
+            break;
+        }
+
+        // 2. Añadir el Digimon al equipo
+        $sqlInsertarEquipo = "INSERT INTO equipo (usuario_id, digimon_id) VALUES (:usuario_id, :digimon_id)";
+        $stmtInsertarEquipo = $conexion->prepare($sqlInsertarEquipo);
+        $stmtInsertarEquipo->bindParam(':usuario_id', $usuarioId);
+        $stmtInsertarEquipo->bindParam(':digimon_id', $digimonNuevo->id);
+        $stmtInsertarEquipo->execute();
+
+        // 3. Añadir el Digimon a la lista general de digimones del usuario
+        $sqlInsertarDigimonesUsuario = "INSERT INTO digimones_usuario (usuario_id, digimon_id) VALUES (:usuario_id, :digimon_id)";
+        $stmtInsertarDigimonesUsuario = $conexion->prepare($sqlInsertarDigimonesUsuario);
+        $stmtInsertarDigimonesUsuario->bindParam(':usuario_id', $usuarioId);
+        $stmtInsertarDigimonesUsuario->bindParam(':digimon_id', $digimonNuevo->id);
+        $stmtInsertarDigimonesUsuario->execute();
+
+        // Añadir el nuevo Digimon a la lista actual de Digimones del usuario para que el bucle lo reconozca
+        $digimonesUsuario[] = $digimonNuevo;
+    }
 }
 
 $usuario = $usuariosController->ver($usuarioId);  
@@ -26,7 +67,7 @@ $rival = $usuariosController->ver($rivalId);
 $digimonesRival = $digimonesController->obtenerEquipoPorUsuario($rivalId);
 
 if (count($digimonesRival) < 3) {
-    die("El rival no tiene suficientes digimones.");
+    die("El rival $rivalId no tiene suficientes digimones.");
 }
 
 function obtenerRivalAleatorio($usuarioId) {
@@ -97,6 +138,12 @@ $usuariosController->actualizarEstadisticas($usuarioId, $victoriasUsuario >= 2);
 // Obtener las estadísticas actualizadas
 $usuarioActualizado = $usuariosController->ver($usuarioId);
 
+// Verificar digievoluciones cada 10 partidas ganadas
+$evoDigimon = $usuariosController->actualizarEvolucion($usuarioId);
+if ($evoDigimon) {
+    echo "<div class='evo'>¡Felicidades! Has ganado una digievolución por tus 10 victorias.</div>";
+}
+
 // Verificar si el usuario ha jugado 10 partidas
 if ($usuarioActualizado->partidas_jugadas % 10 === 0) {
     // Regalar un Digimon de nivel 1 que no tenga
@@ -123,6 +170,7 @@ if ($usuarioActualizado->partidas_jugadas % 10 === 0) {
         .player { width: 45%; text-align: center; }
         .player img { width: 150px; height: 150px; border-radius: 50%; border: 3px solid #ffcc00; }
         .result { font-size: 1.5em; margin-top: 20px; font-weight: bold; color: #ffcc00; }
+        .evo { font-size: 1.5em; margin-top: 20px; font-weight: bold; color: #ffcc00; }
         .button { display: inline-block; margin: 20px; padding: 10px 20px; background: #28a745; color: #fff; border: none; cursor: pointer; }
         .round-indicator { font-size: 1.2em; margin-top: 10px; color: #ffcc00; }
     </style>
@@ -147,6 +195,7 @@ if ($usuarioActualizado->partidas_jugadas % 10 === 0) {
                 </div>
             </div>
             <div class="result"><?= $ronda['resultado']; ?></div>
+            <div class="evo"></div>
         <?php endforeach; ?>
 
         <div class="result"><?= $mensajeFinal; ?></div>
