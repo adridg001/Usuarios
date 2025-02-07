@@ -57,32 +57,38 @@ class UsersController {
     $stmt->execute();
 }
 
-public function actualizarEvolucion($usuarioId){
+public function actualizarEvolucion($usuarioId) {
     try {
         $conexion = db::conexion();
 
-        // Obtener el número de partidas ganadas del usuario
+        // Obtener el número de partidas ganadas y digievoluciones disponibles
         $sql = "SELECT partidas_ganadas, digievoluciones_disponibles FROM usuarios WHERE id = :usuario_id";
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
         $stmt->execute();
         $usuario = $stmt->fetch(PDO::FETCH_OBJ);
 
-        if ($usuario && $usuario->partidas_ganadas > 0 && $usuario->partidas_ganadas % 10 == 0) {
-            // Sumar 1 a las digievoluciones disponibles
-            $sqlUpdate = "UPDATE usuarios SET digievoluciones_disponibles = digievoluciones_disponibles + 1 WHERE id = :usuario_id";
-            $stmtUpdate = $conexion->prepare($sqlUpdate);
-            $stmtUpdate->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
-            $stmtUpdate->execute();
+        if ($usuario && $usuario->partidas_ganadas > 0) {
+            // Calcular cuántas digievoluciones debería tener el usuario según sus victorias
+            $digievolucionesEsperadas = intdiv($usuario->partidas_ganadas, 10);
 
-            return "¡Has ganado una nueva Digievolución!";
+            // Verificar si el usuario ya tiene las digievoluciones correspondientes a sus victorias
+            if ($usuario->digievoluciones_disponibles < $digievolucionesEsperadas) {
+                // Sumar 1 a las digievoluciones disponibles
+                $sqlUpdate = "UPDATE usuarios SET digievoluciones_disponibles = digievoluciones_disponibles + 1 WHERE id = :usuario_id";
+                $stmtUpdate = $conexion->prepare($sqlUpdate);
+                $stmtUpdate->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
+                $stmtUpdate->execute();
+
+                return "¡Has ganado una nueva Digievolución!";
+            }
         }
         return null;
     } catch (PDOException $e) {
         return "Error: " . $e->getMessage();
     }
-
 }
+
 
 
 }
