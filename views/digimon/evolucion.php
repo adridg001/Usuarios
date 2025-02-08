@@ -77,27 +77,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 function obtenerEvolucionesPosibles($digimonId, $conexion) {
-    $sqlTipoNivel = "SELECT tipo, nivel FROM digimones WHERE id = :digimon_id";
-    $stmtTipoNivel = $conexion->prepare($sqlTipoNivel);
-    $stmtTipoNivel->bindParam(':digimon_id', $digimonId, PDO::PARAM_INT);
-    $stmtTipoNivel->execute();
-    $datosDigimon = $stmtTipoNivel->fetch(PDO::FETCH_ASSOC);
+    // Obtener el evo_id del Digimon actual
+    $sql = "SELECT evo_id FROM digimones WHERE id = :digimon_id";
+    $stmt = $conexion->prepare($sql);
+    $stmt->bindParam(':digimon_id', $digimonId, PDO::PARAM_INT);
+    $stmt->execute();
+    $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($datosDigimon) {
-        $tipo = $datosDigimon['tipo'];
-        $nivelActual = $datosDigimon['nivel'];
+    if ($resultado && $resultado['evo_id']) {
+        $evoId = $resultado['evo_id'];
 
-        $sql = "SELECT * FROM digimones WHERE nivel = :nivel_siguiente AND tipo = :tipo";
-        $stmt = $conexion->prepare($sql);
-        $nivelSiguiente = $nivelActual + 1;
-        $stmt->bindParam(':nivel_siguiente', $nivelSiguiente, PDO::PARAM_INT);
-        $stmt->bindParam(':tipo', $tipo, PDO::PARAM_STR);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Buscar el Digimon que corresponde al evo_id
+        $sqlEvolucion = "SELECT * FROM digimones WHERE id = :evo_id";
+        $stmtEvolucion = $conexion->prepare($sqlEvolucion);
+        $stmtEvolucion->bindParam(':evo_id', $evoId, PDO::PARAM_INT);
+        $stmtEvolucion->execute();
+        return $stmtEvolucion->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Si no hay evo_id, no hay evoluciones disponibles
     return [];
 }
+
 ?>
 
 
@@ -152,6 +153,9 @@ p {
     width: 200px;
     text-align: center;
     transition: all 0.3s ease;
+    margin: 20px auto;  /* Esto centra el elemento horizontalmente */
+    width: 250px;       /* Ancho fijo para asegurar que se centre bien */
+    text-align: center; /* Alinea el contenido dentro del div al centro */
 }
 .digimon-item:hover {
     transform: translateY(-10px);
@@ -256,24 +260,30 @@ a:hover {
         </div>
 
         <?php 
-        if ($digimonSeleccionadoId): 
-            $evoluciones = obtenerEvolucionesPosibles($digimonSeleccionadoId, $conexion);
+if ($digimonSeleccionadoId): 
+    $evoluciones = obtenerEvolucionesPosibles($digimonSeleccionadoId, $conexion);
+?>
+    <input type="hidden" name="digimon_id" value="<?= $digimonSeleccionadoId ?>">
+    <?php if (!empty($evoluciones)): ?>
+        <?php 
+        // Como solo hay una evolución posible, obtenemos la primera (y única)
+        $evolucion = $evoluciones[0]; 
         ?>
-            <input type="hidden" name="digimon_id" value="<?= $digimonSeleccionadoId ?>">
-            <?php if (!empty($evoluciones)): ?>
-                <h3>Selecciona la evolución:</h3>
-                <select name="evolucion_id" required>
-                    <?php foreach ($evoluciones as $evolucion): ?>
-                        <option value="<?= $evolucion['id'] ?>">
-                            <?= $evolucion['nombre'] ?> (Nivel <?= $evolucion['nivel'] ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="submit" name="action" value="evolucionar">Evolucionar</button>
-            <?php else: ?>
-                <p class="mensaje error">Este Digimon no tiene evoluciones disponibles.</p>
-            <?php endif; ?>
-        <?php endif; ?>
+        <h3>Tu Digimon evolucionará a:</h3>
+        <div class="digimon-item">
+            <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars($evolucion['nombre']) ?>/<?= htmlspecialchars($evolucion['imagen']) ?>" alt="<?= htmlspecialchars($evolucion['nombre']) ?>">
+            <h3><?= $evolucion['nombre'] ?></h3>
+            <p>Nivel <?= $evolucion['nivel'] ?></p>
+        </div>
+
+        <!-- Campo oculto para enviar la evolución correspondiente -->
+        <input type="hidden" name="evolucion_id" value="<?= $evolucion['id'] ?>">
+        <button type="submit" name="action" value="evolucionar">Confirmar Evolución</button>
+    <?php else: ?>
+        <p class="mensaje error">Este Digimon no tiene evoluciones disponibles.</p>
+    <?php endif; ?>
+<?php endif; ?>
+
     </form>
 
     <a href="../../index.php">Volver</a>

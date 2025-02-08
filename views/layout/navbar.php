@@ -38,7 +38,6 @@ if ($usuario->partidas_jugadas > 0) {
       flex-direction: column;
       align-items: center;
       padding: 10px;
-      background-color: rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       margin-bottom: 20px;
       color: #ffcc00;
