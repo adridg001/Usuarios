@@ -1,5 +1,11 @@
 <?php
 session_start();
+if (isset($_SESSION["usuario"])) {
+    header("location:index.php");
+    exit();
+}   
+session_destroy();
+session_start();
 $user = ($_POST["usuario"]) ?? "";
 $password = ($_POST["password"]) ?? "";
 $error = false;

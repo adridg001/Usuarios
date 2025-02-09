@@ -187,9 +187,11 @@ $usuariosController->actualizarEstadisticas($usuarioId, $victoriasUsuario >= 2);
 $usuarioActualizado = $usuariosController->ver($usuarioId);
 
 // Verificar digievoluciones cada 10 partidas ganadas
-$evoDigimon = $usuariosController->actualizarEvolucion($usuarioId);
-if ($evoDigimon) {
-    echo "<div class='evo'>¡Felicidades! Has ganado una digievolución por tus 10 victorias.</div>";
+if ($usuarioActualizado->partidas_ganadas % 10 === 0) {
+    $evoDigimon = $usuariosController->actualizarEvolucion($usuarioId);
+    if ($evoDigimon) {
+        echo "<div class='evo'>¡Felicidades! Has ganado una digievolución por tus 10 victorias.</div>";
+    }
 }
 
 // Verificar si el usuario ha jugado 10 partidas
