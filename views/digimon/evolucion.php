@@ -286,7 +286,8 @@ if ($digimonSeleccionadoId):
 
     </form>
 
-    <a href="../../index.php">Volver</a>
+    <a href="../../index.php" class="btn btn-primary">Volver</a>
+
 </div>
 
 

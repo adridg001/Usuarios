@@ -155,9 +155,13 @@ for ($i = 0; $i < 3; $i++) {
     if ($poderUsuario > $poderRival) {
         $resultado = "Ganaste esta ronda";
         $victoriasUsuario++;
+        $imagenResultadoUsuario = "/Digimon/Administracion/digimones/{$digimonUsuario->nombre}/victoria.png";
+        $imagenResultadoRival = "/Digimon/Administracion/digimones/{$digimonRival->nombre}/derrota.png";
     } else {
         $resultado = "Perdiste esta ronda";
         $victoriasRival++;
+        $imagenResultadoUsuario = "/Digimon/Administracion/digimones/{$digimonUsuario->nombre}/derrota.png";
+        $imagenResultadoRival = "/Digimon/Administracion/digimones/{$digimonRival->nombre}/victoria.png";
     }
 
     // Almacenar el resultado de la ronda
@@ -167,7 +171,9 @@ for ($i = 0; $i < 3; $i++) {
         "digimonRival" => $digimonRival,
         "poderUsuario" => $poderUsuario,
         "poderRival" => $poderRival,
-        "resultado" => $resultado
+        "resultado" => $resultado,
+        "imagenResultadoUsuario" => $imagenResultadoUsuario,
+        "imagenResultadoRival" => $imagenResultadoRival
     ];
 }
 
@@ -227,17 +233,16 @@ if ($usuarioActualizado->partidas_jugadas % 10 === 0) {
             <div class="battle">
                 <div class="player">
                     <h2>Jugador: <?= $usuario->nombre; ?></h2>
-                    <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars(string: $ronda['digimonUsuario']->nombre); ?>/<?= htmlspecialchars($ronda['digimonUsuario']->imagen); ?>" alt="<?= htmlspecialchars($ronda['digimonUsuario']->nombre); ?>">
-                    <p>Digimon:<?= htmlspecialchars($ronda['digimonUsuario']->nombre); ?> (Poder: <?= htmlspecialchars($ronda['poderUsuario']); ?>)</p>
+                    <img src="<?= $ronda['imagenResultadoUsuario']; ?>" alt="<?= $ronda['resultado']; ?>" style="width: 150px; height: 150px;">
+                    <p>Digimon: <?= htmlspecialchars($ronda['digimonUsuario']->nombre); ?> (Poder: <?= htmlspecialchars($ronda['poderUsuario']); ?>)</p>
                 </div>
                 <div class="player">
                     <h2>Rival: <?= $rival->nombre; ?></h2>
-                    <img src="/Digimon/Administracion/digimones/<?= htmlspecialchars(string: $ronda['digimonRival']->nombre); ?>/<?= htmlspecialchars($ronda['digimonRival']->imagen); ?>" alt="<?= htmlspecialchars($ronda['digimonRival']->nombre); ?>">
+                    <img src="<?= $ronda['imagenResultadoRival']; ?>" alt="<?= $ronda['resultado']; ?>" style="width: 150px; height: 150px;">
                     <p>Digimon: <?= htmlspecialchars($ronda['digimonRival']->nombre); ?> (Poder: <?= htmlspecialchars($ronda['poderRival']); ?>)</p>
                 </div>
             </div>
             <div class="result"><?= $ronda['resultado']; ?></div>
-            <div class="evo"></div>
         <?php endforeach; ?>
 
         <div class="result"><?= $mensajeFinal; ?></div>
